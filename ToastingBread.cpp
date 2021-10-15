@@ -9,7 +9,7 @@ ObjectPtr bread, toast, burnt, startbutton, replaybutton, endbutton;
 TimerPtr timer;
 ObjectPtr toastingbread[10];
 SoundPtr bgm, gameoversd, successsd;
-
+int count = 0;
 
 //버튼클릭효과음
 void uisound() {
@@ -20,9 +20,14 @@ void uisound() {
 //재도전, 끝내기 버튼
 void button() {
 	replaybutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
+		count = 0;
 		gameoversd->stop();
 		successsd->stop();
 		uisound();
+
+		for (int i = 0; i < 10; i++) {
+			toastingbread[i]->hide();
+		}
 		bgm->play(true);
 
 		startgame();
@@ -131,8 +136,8 @@ void gameover() {
 	bgm->stop();
 	gameoversd->play();
 
-	for (int i = 0; i < 10; i++) {
-		toastingbread[i]->setImage("Images/burnt.png");
+	for (count; count < 10; count++) {
+		toastingbread[count]->setImage("Images/burnt.png");
 	}
 	showMessage("식빵이 다 타버렸어요!");
 
@@ -147,6 +152,7 @@ void breadclick(int i) {
 	toastingbread[i]->setImage("Images/toast.png");
 	SoundPtr flipbread = Sound::create("Sounds/flipbread.ogg");
 	flipbread->play();
+	count++;
 }
 
 //식빵 뒤집기
