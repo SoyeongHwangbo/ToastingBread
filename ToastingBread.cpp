@@ -8,7 +8,37 @@ ScenePtr scene;
 ObjectPtr bread, toast, burnt, startbutton, replaybutton, endbutton;
 TimerPtr timer;
 ObjectPtr toastingbread[10];
+SoundPtr bgm, gameoversd, successsd;
 
+
+//버튼클릭효과음
+void uisound() {
+	SoundPtr uisound = Sound::create("Sounds/uisound.ogg");
+	uisound->play();
+}
+
+//재도전, 끝내기 버튼
+void button() {
+	replaybutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
+		gameoversd->stop();
+		successsd->stop();
+		uisound();
+		bgm->play(true);
+
+		startgame();
+		replaybutton->hide();
+		endbutton->hide();
+
+		return true;
+		});
+
+	endbutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
+		uisound();
+		endGame();
+
+		return true;
+		});
+}
 
 //랜덤으로 식빵 섞기
 void mixbread(void) {
@@ -80,6 +110,9 @@ void mixbread(void) {
 
 //뒤집기 성공
 void success() {
+	bgm->stop();
+	successsd->play();
+
 	timer->stop();
 	for (int i = 0; i < 10; i++) {
 		toastingbread[i]->setImage("Images/smiletoast.png");
@@ -89,23 +122,15 @@ void success() {
 	replaybutton = Object::create("Images/restartbutton.png", scene, 300, 300);
 	endbutton = Object::create("Images/endbutton.png", scene, 760, 300);
 
-	replaybutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
-		startgame();
-		replaybutton->hide();
-		endbutton->hide();
-
-		return true;
-		});
-
-	endbutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
-		endGame();
-
-		return true;
-		});
+	button();
 }
+
 
 //시간초과-실패
 void gameover() {
+	bgm->stop();
+	gameoversd->play();
+
 	for (int i = 0; i < 10; i++) {
 		toastingbread[i]->setImage("Images/burnt.png");
 	}
@@ -114,53 +139,48 @@ void gameover() {
 	replaybutton = Object::create("Images/restartbutton.png", scene, 300, 300);
 	endbutton = Object::create("Images/endbutton.png", scene, 760, 300);
 
-	replaybutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
-		startgame();
-		replaybutton->hide();
-		endbutton->hide();
+	button();
+}
 
-		return true;
-		});
-
-	endbutton->setOnMouseCallback([&](auto object, int x, int y, auto action)->bool {
-		endGame();
-
-		return true;
-		});
+//식빵 클릭
+void breadclick(int i) {
+	toastingbread[i]->setImage("Images/toast.png");
+	SoundPtr flipbread = Sound::create("Sounds/flipbread.ogg");
+	flipbread->play();
 }
 
 //식빵 뒤집기
 //(루프나 조건문으로 간단히 하고 싶었으나, 자꾸 예외처리 및 오류가 떠 부득이하게 아래와 같이 씀)
 void breadflip() {
 	toastingbread[0]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-		toastingbread[0]->setImage("Images/toast.png");
+		breadclick(0);
 		
 		toastingbread[1]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-			toastingbread[1]->setImage("Images/toast.png");
+			breadclick(1);
 			
 			toastingbread[2]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-				toastingbread[2]->setImage("Images/toast.png");
+				breadclick(2);
 
 				toastingbread[3]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-					toastingbread[3]->setImage("Images/toast.png");
+					breadclick(3);
 
 					toastingbread[4]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-						toastingbread[4]->setImage("Images/toast.png");
+						breadclick(4);
 
 						toastingbread[5]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-							toastingbread[5]->setImage("Images/toast.png");
+							breadclick(5);
 
 							toastingbread[6]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-								toastingbread[6]->setImage("Images/toast.png");
+								breadclick(6);
 
 								toastingbread[7]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-									toastingbread[7]->setImage("Images/toast.png");
+									breadclick(7);
 
 									toastingbread[8]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-										toastingbread[8]->setImage("Images/toast.png");
+										breadclick(8);
 
 										toastingbread[9]->setOnMouseCallback([&](auto object, int x, int y, MouseAction)->bool {
-											toastingbread[9]->setImage("Images/toast.png");
+											breadclick(9);
 											success();
 											return true;
 											});
@@ -225,6 +245,7 @@ void readypage() {
 	burnt->show();
 
 	startbutton->setOnMouseCallback([&](ObjectPtr object, int x, int y, MouseAction action)->bool {
+		uisound();
 		startgame();
 		return true;
 		});
@@ -236,6 +257,11 @@ void readypage() {
 int main(){
 	setGameOption(GameOption::GAME_OPTION_INVENTORY_BUTTON, false);
 	setGameOption(GameOption::GAME_OPTION_MESSAGE_BOX_BUTTON, false);
+	
+	gameoversd = Sound::create("Sounds/gameover.mp3");
+	successsd = Sound::create("Sounds/success.mp3");
+	bgm = Sound::create("Sounds/bgm.mp3");
+	bgm->play(true);
 
 	readypage();
 
